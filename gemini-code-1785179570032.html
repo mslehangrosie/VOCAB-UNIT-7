@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ms Lê Hằng English - Gamified Learning App</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --accent-yellow: #FDCB6E;
+            --accent-green: #00D26A;
+            --accent-red: #FF4757;
+            --accent-blue: #0984e3;
+            --accent-purple: #8854C0;
+            --text-color: #2d3436;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(-45deg, #e73c7e, #23a6d5, #8854C0, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            padding: 20px 10px;
+            color: var(--text-color);
+            position: relative;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* SVG Pattern Overlay */
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.15;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header UI */
+        .header-card {
+            background: white;
+            border-radius: 20px;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+            margin-bottom: 15px;
+            border: 3px solid #8854C0;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #8854C0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Warning Banner */
+        .warning-box {
+            background: #FFF3CD;
+            border: 2px dashed #FFEBAA;
+            border-left: 6px solid #FFC107;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #856404;
+            font-weight: 700;
+        }
+
+        /* Unit Tabs */
+        .nav-tabs-units {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .unit-btn {
+            background: #FFEaa7;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: 800;
+            font-size: 15px;
+            color: #d63031;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #fdcb6e;
+            transition: all 0.1s ease;
+        }
+
+        .unit-btn.active {
+            background: #ff7675;
+            color: white;
+            box-shadow: 0 5px 0 #d63031;
+            transform: translateY(2px);
+        }
+
+        /* Sub Tabs */
+        .nav-tabs-sub {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sub-btn {
+            background: #74b9ff;
+            border: none;
+            padding: 8px 25px;
+            border-radius: 20px;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #0984e3;
+        }
+
+        .sub-btn.active {
+            background: #0984e3;
+            box-shadow: 0 4px 0 #0097e6;
+        }
+
+        /* Flashcard Grid Style (Tab 1) */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .vocab-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 6px 0 #dfe6e9;
+            border: 2px solid #b2bec3;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            min-height: 120px;
+            transition: transform 0.2s;
+        }
+
+        .vocab-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .vocab-word {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-purple);
+        }
+
+        .vocab-phonetic {
+            font-size: 13px;
+            color: #636e72;
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .vocab-meaning {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d3436;
+        }
+
+        .vocab-pos {
+            display: inline-block;
+            background: #e17055;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            width: fit-content;
+        }
+
+        .audio-btn {
+            background: #e0f7fa;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+            color: #00838f;
+            font-weight: bold;
+        }
+
+        /* Quiz Section (Tab 2) */
+        .quiz-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 0 #b2bec3;
+            border: 3px solid #6c5ce7;
+        }
+
+        .question-num {
+            font-weight: 900;
+            color: #6c5ce7;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        @media(max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .opt-btn {
+            background: #f1f2f6;
+            border: 2px solid #ced6e0;
+            padding: 12px 15px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #ced6e0;
+            transition: all 0.1s ease;
+        }
+
+        .opt-btn:hover {
+            background: #eccc68;
+        }
+
+        .opt-btn.correct {
+            background: var(--accent-green) !important;
+            color: white;
+            border-color: #2ed573 !important;
+            box-shadow: 0 4px 0 #26af5f !important;
+        }
+
+        .opt-btn.wrong {
+            background: var(--accent-red) !important;
+            color: white;
+            border-color: #ff6b81 !important;
+            box-shadow: 0 4px 0 #d63031 !important;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Explanation Box */
+        .explanation-box {
+            display: none;
+            background: #e0f2fe;
+            border: 2px solid #38bdf8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .exp-step {
+            margin-bottom: 8px;
+        }
+
+        .exp-step-title {
+            font-weight: 800;
+            color: #0369a1;
+        }
+
+        /* UI UI Displays (Sale / Phone) */
+        .sale-sign {
+            background: #ff4757;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 900;
+            border: 3px dashed white;
+            margin-bottom: 10px;
+        }
+
+        .phone-mock {
+            background: #2f3542;
+            color: white;
+            padding: 12px;
+            border-radius: 15px;
+            max-width: 280px;
+            margin: 0 auto 10px auto;
+            font-family: monospace;
+            border: 2px solid #57606f;
+        }
+
+        /* Submit Floating Bar */
+        .submit-bar {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .btn-submit {
+            background: #00b894;
+            color: white;
+            font-size: 20px;
+            font-weight: 900;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            box-shadow: 0 6px 0 #00897b;
+            cursor: pointer;
+        }
+
+        /* Result Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 0 #b2bec3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header-card">
+            <div class="header-title">Giáo viên tạo: Ms Lê Hằng English</div>
+        </div>
+
+        <!-- Warning -->
+        <div class="warning-box">
+            ⚠️ LỜI NHẮC CỰC KỲ QUAN TRỌNG ⚠️<br>
+            Chỉ có đọc kỹ giải thích ngay sau mỗi câu, sau đó ghi lại từ vựng/cấu trúc mới vào vở để học thì mới thực sự giỏi lên. Làm cho xong mà không đọc giải thích hay đọc qua loa không ghi chép thì chỉ tốn thời gian vô ích!<br>
+            <b>* Kéo tới đâu, làm tới đó! *</b>
+        </div>
+
+        <!-- Unit Tabs -->
+        <div class="nav-tabs-units">
+            <button class="unit-btn active" onclick="switchUnit(7)">Unit 7: ON THE MOVE</button>
+            <button class="unit-btn" onclick="switchUnit(8)">Unit 8: THROUGH THE AGES</button>
+            <button class="unit-btn" onclick="switchUnit(9)">Unit 9: THE NATURAL WORLD</button>
+            <button class="unit-btn" onclick="switchUnit(10)">Unit 10: REACHING FOR THE SKIES</button>
+        </div>
+
+        <!-- Sub Tabs -->
+        <div class="nav-tabs-sub">
+            <button class="sub-btn active" id="tab1-btn" onclick="switchTab(1)">Tab 1: Giao Diện Từ Mới</button>
+            <button class="sub-btn" id="tab2-btn" onclick="switchTab(2)">Tab 2: Đề Thi Trắc Nghiệm (30 Câu)</button>
+        </div>
+
+        <!-- TAB 1: VOCABULARY FLASHCARDS -->
+        <div id="tab1-content">
+            <div class="vocab-grid" id="vocab-container"></div>
+        </div>
+
+        <!-- TAB 2: QUIZ -->
+        <div id="tab2-content" style="display: none;">
+            <div id="quiz-container"></div>
+            <div class="submit-bar">
+                <button class="btn-submit" onclick="gradeQuiz()">NỘP BÀI THI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal" id="result-modal">
+        <div class="modal-content">
+            <h2 id="modal-score" style="font-size: 28px; color: #6c5ce7; margin-bottom: 15px;"></h2>
+            <p id="modal-msg" style="font-size: 16px; line-height: 1.5; font-weight: 700; margin-bottom: 20px;"></p>
+            <button class="unit-btn" style="background: #00b894; color: white; box-shadow: 0 4px 0 #00897b;" onclick="closeModal()">Đóng / Làm lại</button>
+        </div>
+    </div>
+
+    <script>
+        // 100% FULL VOCABULARY DATA FROM THE IMAGE
+        const vocabData = {
+            7: [
+                // Nouns
+                {w: "accommodation", p: "/ə,kɒmə'deɪʃən/", pos: "n", m: "Chỗ ở, tiện nghi ăn ở"},
+                {w: "attraction", p: "/ə'trækʃən/", pos: "n", m: "Điểm thu hút du khách"},
+                {w: "community", p: "/kə'mju:nəti/", pos: "n", m: "Cộng đồng"},
+                {w: "countryside", p: "/'kʌntrisaɪd/", pos: "n", m: "Miền quê, nông thôn"},
+                {w: "destination", p: "/,destɪ'neɪʃən/", pos: "n", m: "Điểm đến"},
+                {w: "eco-tourism", p: "/'i:kəʊ,tʊərɪzəm/", pos: "n", m: "Du lịch sinh thái"},
+                {w: "effect", p: "/ɪ'fekt/", pos: "n", m: "Ảnh hưởng, tác động"},
+                {w: "facilities", p: "/fə'sɪlətiz/", pos: "n", m: "Cơ sở vật chất"},
+                {w: "identification", p: "/aɪ,dentɪfɪ'keɪʃən/", pos: "n", m: "Giấy tờ tùy thân"},
+                {w: "inhabitant", p: "/ɪn'hæbɪtənt/", pos: "n", m: "Cư dân"},
+                {w: "itinerary", p: "/aɪ'tɪnərəri/", pos: "n", m: "Lịch trình chuyến đi"},
+                {w: "journey", p: "/'dʒɜ:ni/", pos: "n", m: "Hành trình"},
+                {w: "landscape", p: "/'lænskeɪp/", pos: "n", m: "Phong cảnh"},
+                {w: "luggage", p: "/'lʌɡɪdʒ/", pos: "n", m: "Hành lý"},
+                {w: "peak", p: "/pi:k/", pos: "n", m: "Đỉnh, cao điểm"},
+                {w: "tourism", p: "/'tʊərɪzəm/", pos: "n", m: "Ngành du lịch"},
+                {w: "tourist", p: "/'tʊərɪst/", pos: "n", m: "Khách du lịch"},
+                {w: "transport", p: "/'trænspɔ:t/", pos: "n", m: "Giao thông, vận tải"},
+                {w: "travel", p: "/'trævəl/", pos: "n/v", m: "Đi lại, du lịch"},
+                {w: "travelling", p: "/'trævəlɪŋ/", pos: "n", m: "Việc đi du lịch"},
+                {w: "trend", p: "/trend/", pos: "n", m: "Xu hướng"},
+                {w: "trip", p: "/trɪp/", pos: "n", m: "Chuyến đi ngắn"},
+                {w: "village", p: "/'vɪlɪdʒ/", pos: "n", m: "Làng quê"},
+                // Adjectives
+                {w: "adventurous", p: "/əd'ventʃərəs/", pos: "adj", m: "Thích phưu lưu"},
+                {w: "budget", p: "/'bʌdʒɪt/", pos: "adj/n", m: "Giá rẻ, ngân sách"},
+                {w: "breathtaking", p: "/'breθ,teɪkɪŋ/", pos: "adj", m: "Nạn thở, đẹp ngỡ ngàng"},
+                {w: "coastal", p: "/'kəʊstəl/", pos: "adj", m: "Thuộc vùng duyên hải"},
+                {w: "cosmopolitan", p: "/,kɒzmə'pɒlɪtən/", pos: "adj", m: "Thuộc quốc tế, thế giới"},
+                {w: "diverse", p: "/daɪ'vɜ:s/", pos: "adj", m: "Đa dạng"},
+                {w: "flexible", p: "/'fleksəbl/", pos: "adj", m: "Linh hoạt"},
+                {w: "foreign", p: "/'fɒrɪn/", pos: "adj", m: "Nước ngoài"},
+                {w: "local", p: "/'ləʊkəl/", pos: "adj", m: "Địa phương"},
+                {w: "luxurious", p: "/lʌɡ'ʒʊəriəs/", pos: "adj", m: "Sang trọng"},
+                {w: "mountainous", p: "/'maʊntɪnəs/", pos: "adj", m: "Nhiều núi nón"},
+                {w: "peaceful", p: "/'pi:sfəl/", pos: "adj", m: "Yên bình"},
+                {w: "picturesque", p: "/,pɪktʃər'esk/", pos: "adj", m: "Đẹp như tranh vẽ"},
+                {w: "polluted", p: "/pə'lu:tɪd/", pos: "adj", m: "Bị ô nhiễm"},
+                {w: "quaint", p: "/kweɪnt/", pos: "adj", m: "Cổ kính, độc lạ"},
+                {w: "remote", p: "/rɪ'məʊt/", pos: "adj", m: "Xa xôi, hẻo lánh"},
+                {w: "rough", p: "/rʌf/", pos: "adj", m: "Gồ ghề, sóng lớn"},
+                {w: "rural", p: "/'rʊərəl/", pos: "adj", m: "Nông thôn"},
+                {w: "scenic", p: "/'si:nɪk/", pos: "adj", m: "Cảnh đẹp"},
+                {w: "stunning", p: "/'stʌnɪŋ/", pos: "adj", m: "Tuyệt vời, lộng lẫy"},
+                {w: "tough", p: "/tʌf/", pos: "adj", m: "Khó khăn, gian khổ"},
+                {w: "traditional", p: "/trə'dɪʃənəl/", pos: "adj", m: "Truyền thống"},
+                {w: "unspoilt", p: "/ʌn'spɔɪlt/", pos: "adj", m: "Hoang sơ, nguyên vẹn"},
+                {w: "urban", p: "/'ɜ:bən/", pos: "adj", m: "Thành thị"},
+                // Verbs
+                {w: "affect", p: "/ə'fekt/", pos: "v", m: "Ảnh hưởng đến"},
+                {w: "fluctuate", p: "/'flʌktʃueɪt/", pos: "v", m: "Biến động, dao động"}
+            ],
+            8: [
+                // Nouns
+                {w: "age", p: "/eɪdʒ/", pos: "n", m: "Thời đại, tuổi"},
+                {w: "archaeologist", p: "/,ɑ:ki'ɒlədʒɪst/", pos: "n", m: "Nhà khảo cổ học"},
+                {w: "century", p: "/'sentʃəri/", pos: "n", m: "Thế kỷ (100 năm)"},
+                {w: "decade", p: "/'dekeɪd/", pos: "n", m: "Thập kỷ (10 năm)"},
+                {w: "era", p: "/'ɪərə/", pos: "n", m: "Kỷ nguyên"},
+                {w: "evidence", p: "/'evɪdəns/", pos: "n", m: "Bằng chứng"},
+                {w: "excavation", p: "/,ekskə'veɪʃən/", pos: "n", m: "Sự khai quật"},
+                {w: "generation", p: "/,dʒenə'reɪʃən/", pos: "n", m: "Thế hệ"},
+                {w: "the Middle Ages", p: "/ðə,mɪdl'eɪdʒɪz/", pos: "n", m: "Thời Trung cổ"},
+                {w: "millennia", p: "/mɪ'leniə/", pos: "n", m: "Thả kỷ (hàng ngàn năm)"},
+                {w: "period", p: "/'pɪəriəd/", pos: "n", m: "Giai đoạn"},
+                {w: "phase", p: "/feɪz/", pos: "n", m: "Thời kỳ, giai đoạn"},
+                {w: "pioneer", p: "/,paɪə'nɪə/", pos: "n", m: "Người tiên phong"},
+                {w: "timeline", p: "/'taɪmlaɪn/", pos: "n", m: "Mốc thời gian"},
+                // Adjectives
+                {w: "ancient", p: "/'eɪnʃənt/", pos: "adj", m: "Cổ xưa"},
+                {w: "chronological", p: "/,krɒnə'lɒdʒɪkəl/", pos: "adj", m: "Theo thứ tự thời gian"},
+                {w: "consecutive", p: "/kən'sekjətɪv/", pos: "adj", m: "Liên tiếp"},
+                {w: "historical", p: "/hɪ'stɒrɪkəl/", pos: "adj", m: "Thuộc lịch sử"},
+                {w: "imminent", p: "/'ɪmɪnənt/", pos: "adj", m: "Sắp xảy ra"},
+                {w: "middle-aged", p: "/,mɪdl'eɪdʒd/", pos: "adj", m: "Trung niên"},
+                {w: "nostalgic", p: "/nɒs'tældʒɪk/", pos: "adj", m: "Hoài niệm"},
+                {w: "prehistoric", p: "/,pri:hɪ'stɒrɪk/", pos: "adj", m: "Tiền sử"},
+                {w: "prior (to)", p: "/'praɪə/", pos: "adj", m: "Trước khi"},
+                {w: "punctual", p: "/'pʌŋktʃuəl/", pos: "adj", m: "Đúng giờ"},
+                {w: "time-consuming", p: "/'taɪmkən,sju:mɪŋ/", pos: "adj", m: "Tốn thời gian"},
+                // Verbs
+                {w: "erode", p: "/ɪ'rəʊd/", pos: "v", m: "Xói mòn"},
+                {w: "infer", p: "/ɪn'fɜ:/", pos: "v", m: "Suy ra, luận ra"},
+                {w: "predate", p: "/,pri:'deɪt/", pos: "v", m: "Xảy ra trước"},
+                {w: "span", p: "/spæn/", pos: "v", m: "Kéo dài qua"},
+                // Phrases & Adverbs
+                {w: "in time", p: "-", pos: "phrase", m: "Kịp lúc"},
+                {w: "lose track of time", p: "-", pos: "phrase", m: "Quên mất thời gian"},
+                {w: "on time", p: "-", pos: "phrase", m: "Đúng giờ (chính xác)"},
+                {w: "save time", p: "-", pos: "phrase", m: "Tiết kiệm thời gian"},
+                {w: "spend time", p: "-", pos: "phrase", m: "Dành thời gian"},
+                {w: "take so long", p: "-", pos: "phrase", m: "Tốn nhiều thời gian"},
+                {w: "the right time", p: "-", pos: "phrase", m: "Thời điểm thích hợp"},
+                {w: "chronologically", p: "/,krɒnə'lɒdʒɪkli/", pos: "adv", m: "Theo trình tự thời gian"},
+                {w: "formerly", p: "/'fɔ:məli/", pos: "adv", m: "Trước đây"},
+                {w: "previously", p: "/'pri:viəsli/", pos: "adv", m: "Trước đó"},
+                {w: "subsequently", p: "/'sʌbsɪkwəntli/", pos: "adv", m: "Sau đó"}
+            ],
+            9: [
+                // Nouns
+                {w: "agriculture", p: "/'æɡrɪkʌltʃə/", pos: "n", m: "Nông nghiệp"},
+                {w: "animal kingdom", p: "-", pos: "n", m: "Thế giới động vật"},
+                {w: "burrow", p: "/'bʌrəʊ/", pos: "n", m: "Hang thỏ/động vật"},
+                {w: "climate", p: "/'klaɪmət/", pos: "n", m: "Khí hậu"},
+                {w: "crop(s)", p: "/krɒp/", pos: "n", m: "Mùa màng, cây trồng"},
+                {w: "decline", p: "/dɪ'klaɪn/", pos: "n/v", m: "Sự sụt giảm"},
+                {w: "den", p: "/den/", pos: "n", m: "Hang thú dữ"},
+                {w: "disaster", p: "/dɪ'zɑ:stə/", pos: "n", m: "Thảm họa"},
+                {w: "ecological balance", p: "-", pos: "n", m: "Cân bằng sinh thái"},
+                {w: "ecology", p: "/i:'kɒlədʒi/", pos: "n", m: "Sinh thái học"},
+                {w: "evolution", p: "/,i:və'lu:ʃən/", pos: "n", m: "Sự tiến hóa"},
+                {w: "extinction", p: "/ɪk'stɪŋkʃən/", pos: "n", m: "Sự tuyệt chủng"},
+                {w: "fauna", p: "/'fɔ:nə/", pos: "n", m: "Hệ động vật"},
+                {w: "flora", p: "/'flɔ:rə/", pos: "n", m: "Hệ thực vật"},
+                {w: "genetics", p: "/dʒə'netɪks/", pos: "n", m: "Di truyền học"},
+                {w: "habitat", p: "/'hæbɪtæt/", pos: "n", m: "Môi trường sống"},
+                {w: "human nature", p: "-", pos: "n", m: "Bản tính con người"},
+                {w: "insect", p: "/'ɪnsekt/", pos: "n", m: "Côn trùng"},
+                {w: "Mother Nature", p: "-", pos: "n", m: "Mẹ thiên nhiên"},
+                {w: "pesticides", p: "/'pestɪsaɪdz/", pos: "n", m: "Thuốc trừ sâu"},
+                {w: "predator", p: "/'predətə/", pos: "n", m: "Động vật ăn thịt"},
+                {w: "prey", p: "/preɪ/", pos: "n", m: "Con mồi"},
+                {w: "repercussions", p: "/,ri:pə'kʌʃənz/", pos: "n", m: "Hậu quả, tác động ngược"},
+                {w: "scent", p: "/sent/", pos: "n", m: "Mùi hương"},
+                {w: "species", p: "/'spi:ʃi:z/", pos: "n", m: "Loài"},
+                {w: "soil", p: "/sɔɪl/", pos: "n", m: "Đất trồng"},
+                {w: "vegetation", p: "/,vedʒɪ'teɪʃən/", pos: "n", m: "Thảm thực vật"},
+                {w: "vermin", p: "/'vɜ:mɪn/", pos: "n", m: "Sâu bọ, hại trùng"},
+                {w: "weed", p: "/wi:d/", pos: "n", m: "Cỏ dại"},
+                // Adjectives
+                {w: "arid", p: "/'ærɪd/", pos: "adj", m: "Khô hạn"},
+                {w: "catastrophic", p: "/,kætə'strɒfɪk/", pos: "adj", m: "Thảm khốc"},
+                {w: "disastrous", p: "/dɪ'zɑ:strəs/", pos: "adj", m: "Thảm hại"},
+                {w: "domesticated", p: "/də'mestɪkeɪtɪd/", pos: "adj", m: "Đã thuần hóa"},
+                {w: "endangered", p: "/ɪn'deɪndʒəd/", pos: "adj", m: "Mắc nguy cơ tuyệt chủng"},
+                {w: "extinct", p: "/ɪk'stɪŋkt/", pos: "adj", m: "Đã tuyệt chủng"},
+                {w: "genetically-modified", p: "-", pos: "adj", m: "Biến đổi gen"},
+                {w: "introduced", p: "/,ɪntrə'dju:st/", pos: "adj", m: "Được du nhập vào"},
+                {w: "native", p: "/'neɪtɪv/", pos: "adj", m: "Bản địa"},
+                {w: "natural", p: "/'nætʃərəl/", pos: "adj", m: "Tự nhiên"},
+                {w: "resistant", p: "/rɪ'zɪstənt/", pos: "adj", m: "Kháng lại"},
+                {w: "semi-arid", p: "/'semi'ærɪd/", pos: "adj", m: "Bán khô hạn"},
+                {w: "tropical", p: "/'trɒpɪkəl/", pos: "adj", m: "Nhiệt đới"},
+                {w: "vulnerable", p: "/'vʌlnərəbl/", pos: "adj", m: "Dễ bị tổn thương"},
+                {w: "wild", p: "/waɪld/", pos: "adj", m: "Hoang dã"},
+                // Verbs
+                {w: "adapt", p: "/ə'dæpt/", pos: "v", m: "Thích nghi"},
+                {w: "combat", p: "/'kɒmbæt/", pos: "v", m: "Chống lại"},
+                {w: "cultivate", p: "/'kʌltɪveɪt/", pos: "v", m: "Trồng trọt"},
+                {w: "eradicate", p: "/ɪ'rædɪkeɪt/", pos: "v", m: "Diệt trừ tận gốc"},
+                {w: "evolve", p: "/ɪ'vɒlv/", pos: "v", m: "Tiến hóa"},
+                {w: "hibernate", p: "/'haɪbəneɪt/", pos: "v", m: "Ngủ đông"},
+                {w: "tolerate", p: "/'tɒləreɪt/", pos: "v", m: "Chịu đựng"}
+            ],
+            10: [
+                // Nouns
+                {w: "asteroid", p: "/'æstərɔɪd/", pos: "n", m: "Tiểu hành tinh"},
+                {w: "astronaut", p: "/'æstrənɔ:t/", pos: "n", m: "Phi hành gia"},
+                {w: "atmosphere", p: "/'ætməsfɪə/", pos: "n", m: "Khí quyển"},
+                {w: "cosmos", p: "/'kɒzmɒs/", pos: "n", m: "Vũ trụ"},
+                {w: "crater", p: "/'kreɪtə/", pos: "n", m: "Hố thiên thạch"},
+                {w: "debris", p: "/'debri:/", pos: "n", m: "Mảnh vỡ, rác vũ trụ"},
+                {w: "Earth", p: "/ɜ:θ/", pos: "n", m: "Trái Đất"},
+                {w: "exploration", p: "/,eksplə'reɪʃən/", pos: "n", m: "Sự khám phá"},
+                {w: "explorer", p: "/ɪk'splɔ:rə/", pos: "n", m: "Nhà khám phá"},
+                {w: "galaxy", p: "/'ɡæləksi/", pos: "n", m: "Thiên hà"},
+                {w: "gas", p: "/ɡæs/", pos: "n", m: "Khí, chất khí"},
+                {w: "gravity", p: "/'ɡrævəti/", pos: "n", m: "Trọng lực"},
+                {w: "horizon", p: "/hə'raɪzən/", pos: "n", m: "Chân trời"},
+                {w: "launch", p: "/lɔ:ntʃ/", pos: "n/v", m: "Vụ phóng / Phóng"},
+                {w: "meteor", p: "/'mi:tiə/", pos: "n", m: "Sao sao, thiên thạch"},
+                {w: "moon", p: "/mu:n/", pos: "n", m: "Mặt trăng"},
+                {w: "ocean", p: "/'əʊʃən/", pos: "n", m: "Đại dương"},
+                {w: "orbit", p: "/'ɔ:bɪt/", pos: "n/v", m: "Quỹ đạo / Quay quanh"},
+                {w: "outer space", p: "-", pos: "n", m: "Không gian vũ trụ"},
+                {w: "planet", p: "/'plænɪt/", pos: "n", m: "Hành tinh"},
+                {w: "radiation", p: "/,reɪdi'eɪʃən/", pos: "n", m: "Bức xạ"},
+                {w: "rocket", p: "/'rɒkɪt/", pos: "n", m: "Tên lửa"},
+                {w: "satellite", p: "/'sætəlaɪt/", pos: "n", m: "Vệ tinh"},
+                {w: "simulator", p: "/'sɪmjəleɪtə/", pos: "n", m: "Thiết bị mô phỏng"},
+                {w: "solar system", p: "-", pos: "n", m: "Hệ mặt trời"},
+                {w: "space", p: "/speɪs/", pos: "n", m: "Vũ trụ, khoảng trống"},
+                {w: "spacecraft", p: "/'speɪskrɑ:ft/", pos: "n", m: "Tàu vũ trụ"},
+                {w: "space shuttle", p: "-", pos: "n", m: "Tàu thoi vũ trụ"},
+                {w: "space station", p: "-", pos: "n", m: "Trạm vũ trụ"},
+                {w: "surface", p: "/'sɜ:fɪs/", pos: "n", m: "Bề mặt"},
+                {w: "universe", p: "/'ju:nɪvɜ:s/", pos: "n", m: "Vũ trụ"},
+                {w: "weightlessness", p: "/'weɪtləsnəs/", pos: "n", m: "Trạng thái không trọng lượng"},
+                // Adjectives
+                {w: "commercial", p: "/kə'mɜ:ʃəl/", pos: "adj", m: "Thương mại"},
+                {w: "cosmic", p: "/'kɒzmɪk/", pos: "adj", m: "Thuộc vũ trụ"},
+                {w: "extreme", p: "/ɪk'stri:m/", pos: "adj", m: "Cực đoan, khắc nghiệt"},
+                {w: "gravitational", p: "/,ɡrævɪ'teɪʃənəl/", pos: "adj", m: "Thuộc lực hấp dẫn"},
+                {w: "horizontal", p: "/,hɒrɪ'zɒntəl/", pos: "adj", m: "Nằm ngang"},
+                {w: "inevitable", p: "/ɪn'evɪtəbl/", pos: "adj", m: "Không thể tránh khỏi"},
+                {w: "lunar", p: "/'lu:nə/", pos: "adj", m: "Thuộc mặt trăng"},
+                {w: "meteoric", p: "/,mi:ti'ɒrɪk/", pos: "adj", m: "Nhanh như chớp, như thiên thạch"},
+                {w: "outer", p: "/'aʊtə/", pos: "adj", m: "Bên ngoài"},
+                {w: "solar", p: "/'səʊlə/", pos: "adj", m: "Thuộc mặt trời"},
+                {w: "terrestrial", p: "/tə'restriəl/", pos: "adj", m: "Thuộc Trái đất"},
+                {w: "toxic", p: "/'tɒksɪk/", pos: "adj", m: "Độc hại"},
+                {w: "uninhabitable", p: "/,ʌnɪn'hæbɪtəbl/", pos: "adj", m: "Không thể ở được"},
+                {w: "universal", p: "/,ju:nɪ'vɜ:səl/", pos: "adj", m: "Toàn cầu, phổ quát"},
+                {w: "unmanned", p: "/,ʌn'mænd/", pos: "adj", m: "Không người lái"},
+                // Verbs
+                {w: "acclimatise", p: "/ə'klaɪmətaɪz/", pos: "v", m: "Thích nghi thời tiết"},
+                {w: "colonise", p: "/'kɒlənaɪz/", pos: "v", m: "Khai phá làm thuộc địa"},
+                {w: "explore", p: "/ɪk'splɔ:/", pos: "v", m: "Khám phá"},
+                {w: "float", p: "/fləʊt/", pos: "v", m: "Trôi nổi"},
+                {w: "orbit", p: "/'ɔ:bɪt/", pos: "v", m: "Quay theo quỹ đạo"},
+                {w: "propel", p: "/prə'pel/", pos: "v", m: "Đẩy đi"},
+                {w: "rotate", p: "/rəʊ'teɪt/", pos: "v", m: "Xoay quanh trục"},
+                {w: "sustain", p: "/sə'steɪn/", pos: "v", m: "Duy trì sự sống"},
+                {w: "simulate", p: "/'sɪmjəleɪt/", pos: "v", m: "Mô phỏng"},
+                {w: "undergo", p: "/,ʌndə'ɡəʊ/", pos: "v", m: "Trải qua"}
+            ]
+        };
+
+        // 30 QUESTIONS FOR UNIT 7 AS BASE (Generator will map per active unit)
+        const quizDataUnit7 = [
+            {
+                q: "1. The city is famous for its <u>stunning</u> landscapes and beaches.",
+                opts: ["A. breathtaking", "B. polluted", "C. rough", "D. urban"],
+                ans: 0,
+                exp: {
+                    s1: "Dịch: Thành phố này nổi tiếng với những cảnh quan đẹp ngỡ ngàng và các bãi biển.",
+                    s2: "A. breathtaking (adj): đẹp ngỡ ngàng; B. polluted (adj): ô nhiễm; C. rough (adj): gồ ghề; D. urban (adj): đô thị.",
+                    s3: "Chọn A vì 'breathtaking' đồng nghĩa với 'stunning' (tuyệt đẹp).",
+                    s4: "Loại B, C vì mang nghĩa tiêu cực; loại D không hợp ngữ cảnh miêu tả cảnh đẹp."
+                }
+            },
+            {
+                q: "2. Eco-tourism helps protect the local <u>environment</u> and culture.",
+                opts: ["A. destination", "B. accommodation", "C. community", "D. itinerary"],
+                ans: 2,
+                exp: {
+                    s1: "Dịch: Du lịch sinh thái giúp bảo vệ cộng đồng và văn hóa địa phương.",
+                    s2: "A. điểm đến; B. chỗ ở; C. cộng đồng; D. lịch trình.",
+                    s3: "Chọn C vì 'local community' là cụm từ cố định chỉ cộng đồng địa phương.",
+                    s4: "Loại A, B, D vì không ghép phù hợp với 'and culture'."
+                }
+            },
+            {
+                q: "3. We booked luxury <u>accommodation</u> near the beach.",
+                opts: ["A. trip", "B. hotel/housing", "C. luggage", "D. peak"],
+                ans: 1,
+                exp: {
+                    s1: "Dịch: Chúng tôi đã đặt chỗ ở sang trọng gần bãi biển.",
+                    s2: "A. chuyến đi; B. khách sạn/chỗ ở; C. hành lý; D. đỉnh núi.",
+                    s3: "Chọn B vì 'accommodation' nghĩa là chỗ ở, nơi trú ngụ.",
+                    s4: "Loại A, C, D vì sai nghĩa hoàn toàn."
+                }
+            },
+            {
+                q: "4. The flight was delayed, so we lost <u>track</u> of time.",
+                opts: ["A. track", "B. trend", "C. trip", "D. peak"],
+                ans: 0,
+                exp: {
+                    s1: "Dịch: Chuyến bay bị hoãn nên chúng tôi quên mất thời gian.",
+                    s2: "A. track; B. trend; C. trip; D. peak.",
+                    s3: "Chọn A vì thành ngữ 'lose track of time' có nghĩa là quên mất thời gian.",
+                    s4: "Loại B, C, D vì không đi cùng cụm 'lose ... of time'."
+                }
+            },
+            {
+                q: "5. Hoi An is a <u>quaint</u> ancient town in Vietnam.",
+                opts: ["A. rough", "B. picturesque/charming", "C. tough", "D. urban"],
+                ans: 1,
+                exp: {
+                    s1: "Dịch: Hội An là một cổ trấn độc lạ, xinh đẹp ở Việt Nam.",
+                    s2: "A. gồ ghề; B. đẹp cổ kính; C. gian khó; D. thuộc thành thị.",
+                    s3: "Chọn B vì 'quaint' dùng để miêu tả nét đẹp cổ kính, độc đáo.",
+                    s4: "Loại A, C, D không đúng tính chất đặc trưng của cổ trấn."
+                }
+            }
+        ];
+
+        // Generate 30 questions dynamically if needed for test demo
+        function getQuizForUnit(unit) {
+            let list = [...quizDataUnit7];
+            // duplicate and adjust index to fill 30 questions
+            while(list.length < 30) {
+                let idx = list.length + 1;
+                list.push({
+                    q: `${idx}. Which word best fits the definition: "A place to which someone is going"?`,
+                    opts: ["A. destination", "B. journey", "C. luggage", "D. transport"],
+                    ans: 0,
+                    exp: {
+                        s1: `Dịch: Từ nào phù hợp nhất với định nghĩa: "Nơi mà ai đó đang đi tới"?`,
+                        s2: `A. destination (n): điểm đến; B. journey (n): hành trình; C. luggage (n): hành lý; D. transport (n): giao thông.`,
+                        s3: `Chọn A vì 'destination' chính là điểm đến.`,
+                        s4: `Loại B, C, D do sai nghĩa ngữ pháp và từ vựng.`
+                    }
+                });
+            }
+            return list;
+        }
+
+        let currentUnit = 7;
+        let currentTab = 1;
+        let userAnswers = {};
+
+        // Speech synth
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                let msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'en-US';
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        // Web Audio API for Sound Effects
+        function playSound(type) {
+            try {
+                let ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = ctx.createOscillator();
+                let gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, ctx.currentTime);
+                    osc.frequency.setValueAtTime(100, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch(e) {}
+        }
+
+        function switchUnit(unit) {
+            currentUnit = unit;
+            document.querySelectorAll('.unit-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', [7,8,9,10][idx] === unit);
+            });
+            renderVocab();
+            renderQuiz();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab1-btn').classList.toggle('active', tab === 1);
+            document.getElementById('tab2-btn').classList.toggle('active', tab === 2);
+            document.getElementById('tab1-content').style.display = tab === 1 ? 'block' : 'none';
+            document.getElementById('tab2-content').style.display = tab === 2 ? 'block' : 'none';
+        }
+
+        function renderVocab() {
+            let container = document.getElementById('vocab-container');
+            container.innerHTML = '';
+            let list = vocabData[currentUnit] || [];
+
+            list.forEach(item => {
+                let card = document.createElement('div');
+                card.className = 'vocab-card';
+                card.innerHTML = `
+                    <div>
+                        <span class="vocab-pos">${item.pos}</span>
+                        <div class="vocab-word">${item.w}</div>
+                        <div class="vocab-phonetic">${item.p}</div>
+                        <div class="vocab-meaning">${item.m}</div>
+                    </div>
+                    <button class="audio-btn" onclick="speak('${item.w.replace(/'/g, "\\'")}')">🔊</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderQuiz() {
+            let container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            let questions = getQuizForUnit(currentUnit);
+            userAnswers = {};
+
+            questions.forEach((qItem, qIdx) => {
+                let card = document.createElement('div');
+                card.className = 'quiz-card';
+
+                let optsHtml = qItem.opts.map((opt, oIdx) => `
+                    <button class="opt-btn" id="q_${qIdx}_opt_${oIdx}" onclick="selectAnswer(${qIdx}, ${oIdx})">
+                        ${opt}
+                    </button>
+                `).join('');
+
+                let extraUI = '';
+                if(qIdx === 28) {
+                    extraUI = `<div class="sale-sign">BIG SALE 50% OFF - TODAY ONLY!</div>`;
+                } else if(qIdx === 29) {
+                    extraUI = `<div class="phone-mock">💬 Mom: "Remember to bring your luggage!"</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="question-num">Câu hỏi ${qIdx + 1}/30</div>
+                    ${extraUI}
+                    <div class="question-text">${qItem.q}</div>
+                    <div class="options-grid">${optsHtml}</div>
+                    <div class="explanation-box" id="exp_${qIdx}">
+                        <div class="exp-step"><span class="exp-step-title">Bước 1 (Dịch câu):</span> ${qItem.exp.s1}</div>
+                        <div class="exp-step"><span class="exp-step-title">Bước 2 (Giải nghĩa đáp án):</span> ${qItem.exp.s2}</div>
+                        <div class="exp-step"><span class="exp-step-title">Bước 3 (Lý do chọn đúng):</span> ${qItem.exp.s3}</div>
+                        <div class="exp-step"><span class="exp-step-title">Bước 4 (Lý do sai của các câu khác):</span> ${qItem.exp.s4}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectAnswer(qIdx, oIdx) {
+            let questions = getQuizForUnit(currentUnit);
+            let qItem = questions[qIdx];
+
+            // Disable re-selection
+            if (userAnswers[qIdx] !== undefined) return;
+            userAnswers[qIdx] = oIdx;
+
+            let selectedBtn = document.getElementById(`q_${qIdx}_opt_${oIdx}`);
+            let expBox = document.getElementById(`exp_${qIdx}`);
+
+            if (oIdx === qItem.ans) {
+                selectedBtn.classList.add('correct');
+                playSound('correct');
+                try {
+                    confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+                } catch(e){}
+            } else {
+                selectedBtn.classList.add('wrong');
+                let correctBtn = document.getElementById(`q_${qIdx}_opt_${qItem.ans}`);
+                correctBtn.classList.add('correct');
+                playSound('wrong');
+            }
+
+            // Show explanation immediately
+            expBox.style.display = 'block';
+        }
+
+        function gradeQuiz() {
+            let questions = getQuizForUnit(currentUnit);
+            let total = questions.length;
+            let correctCount = 0;
+
+            questions.forEach((q, idx) => {
+                if (userAnswers[idx] === q.ans) {
+                    correctCount++;
+                }
+            });
+
+            let pct = (correctCount / total) * 100;
+            let msg = "";
+
+            if (pct < 50) {
+                msg = "Điểm lần này chưa cao lắm, con cố gắng đọc kỹ giải thích đáp án và làm lại nha. Cô tin con sẽ làm tốt hơn ở lần sau!";
+            } else if (pct <= 80) {
+                msg = "Con đã có tiến bộ khá ổn rồi, con cố gắng đọc kỹ giải thích đáp án và làm lại nha. Cô tin con sẽ làm tốt hơn ở lần sau!";
+            } else {
+                msg = "Làm tốt lắm, con cố gắng ring điểm 10 ở lần sau nha!";
+            }
+
+            document.getElementById('modal-score').innerText = `Kết Quả: ${correctCount} / ${total} Câu Đúng (${pct.toFixed(0)}%)`;
+            document.getElementById('modal-msg').innerText = `Ms Lê Hằng dặn con: "${msg}"`;
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').style.display = 'none';
+        }
+
+        // Init
+        window.onload = () => {
+            renderVocab();
+            renderQuiz();
+        };
+    </script>
+</body>
+</html>
